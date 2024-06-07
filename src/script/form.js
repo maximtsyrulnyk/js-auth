@@ -1,6 +1,10 @@
-export const REG_EXP_EMAIL = new RegExp(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$/,)
+export const REG_EXP_EMAIL = new RegExp(
+    /^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$/,
+)
 
-export const REG_EXP_PASSWORD = new RegExp(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8, }$/, )
+export const REG_EXP_PASSWORD = new RegExp(
+    /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/,
+)
 
 export class Form {
     FIELD_NAME = {}
@@ -8,12 +12,21 @@ export class Form {
 
     value = {}
     error = {}
-    disabled = false
+    disabled = true
 
     change = (name, value) => {
+        const error = this.validate(name, value)
         this.value[name] = value
 
-        this.checkValid(name, value)
+        if (error) {
+            this.setError(name, error)
+            this.error[name] = error
+        } else {
+            this.setError(name, null)
+            delete this.error[name]
+        }
+
+        this.checkDisabled()
     }
 
     setError = (name, error) => {
@@ -41,19 +54,17 @@ export class Form {
         }
     }
 
-    checkValid = (name, value) => {
+    
+
+    checkDisabled = () => {
         let disabled = false
 
         Object.values(this.FIELD_NAME).forEach((name) => {
-            const error = this.validate(name, this.value[name])
-
-            if(error) {
-                this.setError(name, error)
+            if (
+                this.error[name] ||
+                this.value[name] === undefined
+            ) {
                 disabled = true
-                this.error(name, error)
-            } else {
-                this.setError(name, null)
-                delete this.error[name]
             }
         })
         
@@ -68,5 +79,30 @@ export class Form {
 
         this.disabled = disabled
     }
-}
 
+    validateAll = () => {
+        Object.values(this.FIELD_NAME).forEach((name) => {
+            const error = this.validate(name, this.value[name])
+
+            if (error) {
+                this.setError(name, error)
+            }
+        })
+    }
+
+    setAlert = (status, text) => {
+        const el = document.querySelector(`.alert`)
+
+        if(status === 'progress') {
+            el.className = 'alert alert--progress'
+        } else if (status === 'success') {
+            el.className = 'alert alert--success'
+        } else if (status === 'error') {
+            el.className = 'alert alert--error'
+        } else {
+            el.className = 'alert alert--disabled'
+        }
+
+        if(text) el.innerText = text
+    }
+}
