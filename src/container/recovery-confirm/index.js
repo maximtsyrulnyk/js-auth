@@ -1,13 +1,16 @@
 import {Form, REG_EXP_EMAIL, REG_EXP_PASSWORD} from '../../script/form'
 
-class RecoveryForm extends Form {
+class RecoveryConfirmForm extends Form {
     FIELD_NAME = {
-        EMAIL: 'email',
+        CODE: 'code',
+        PASSWORD: 'password',
+        PASSWOD_AGAIN: 'passwordAgain',
     }
     FIELD_ERROR = {
         IS_EMPTY: 'Введіть значення в поле',
         IS_BIG: 'Дуже довге значення, приберіть зайве',
-        EMAIL: 'Введіть коректне значення e-mail адреси',
+        PASSWORD: 'Пароль повинен складатися з не менше ніж 8 символів, включаючи хоча б одну цифру, малу та велику літеру',
+        PASSWOD_AGAIN: 'Ваш другий пароль не збігається з першим',
     }
 
     validate = (name, value) => {
@@ -17,21 +20,26 @@ class RecoveryForm extends Form {
         if(String(value).length > 20) {
             return this.FIELD_ERROR.IS_BIG
         }
-        if(name === this.FIELD_NAME.EMAIL) {
-            if(!REG_EXP_EMAIL.test(String(value))) {
-                return this.FIELD_ERROR.EMAIL
+        if(name === this.FIELD_NAME.PASSWORD) {
+            if(!REG_EXP_PASSWORD.test(String(value))) {
+                return this.FIELD_ERROR.PASSWORD
             }
         }
-        
+        if(name === this.FIELD_NAME.PASSWOD_AGAIN) {
+            if(String(value) !== this.value[this.FIELD_NAME.PASSWORD]) {
+                return this.FIELD_ERROR.PASSWOD_AGAIN
+            }
+        }       
     }
     submit = async () => {
         if(this.disabled === true) {
             this.validateAll()
         } else {
+                console.log(this.value)
             this.setAlert('progress', 'Завантаження...')
 
             try { 
-                const res = await fetch('/recovery', {
+                const res = await fetch('/recovery-confirm', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -43,8 +51,6 @@ class RecoveryForm extends Form {
 
                 if(res.ok) {
                     this.setAlert('success', data.message)
-
-                    location.assign('/recovery-confirm')
                 } else {
                     this.setAlert('error', data.message)
                 }
@@ -57,11 +63,13 @@ class RecoveryForm extends Form {
 
     convertData = () => {
         return JSON.stringify({
-            [this.FIELD_NAME.EMAIL]:
-                this.value[this.FIELD_NAME.EMAIL],
+            [this.FIELD_NAME.CODE]:
+                Number(this.value[this.FIELD_NAME.CODE]),
+            [this.FIELD_NAME.PASSWORD]:
+                this.value[this.FIELD_NAME.PASSWORD],
         })
     }
 }
 
-window.recoveryForm = new RecoveryForm()
+window.recoveryConfirmForm = new RecoveryConfirmForm()
 

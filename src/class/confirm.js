@@ -12,7 +12,7 @@ class Confirm {
   static create = (data) => {
     this.#list.push(new Confirm(data))
 
-    setTimeOut(() => {
+    setTimeout(() => {
       this.delete(code)
     }, 24  * 60 * 60* 1000) // 24 години у мілісекундах
 
